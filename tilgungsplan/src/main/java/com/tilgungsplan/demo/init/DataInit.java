@@ -1,7 +1,7 @@
 package com.tilgungsplan.demo.init;
 
 import com.tilgungsplan.demo.entity.TilgungDO;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.tilgungsplan.demo.output.TableGeneration;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -20,15 +20,15 @@ public class DataInit implements ApplicationRunner {
     private TilgungsDAO tilgungsDAO;
     private static final DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
     private Calendar calendar;
+    public void DataInit(){}
 
-    @Autowired
+
     public DataInit(TilgungsDAO tilgungsDAO) {
         this.tilgungsDAO = tilgungsDAO;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        long count = tilgungsDAO.count();
 
         Date date = dateFormat.parse("30.11.2015");
         calendar = Calendar.getInstance();
@@ -68,15 +68,23 @@ public class DataInit implements ApplicationRunner {
             til = Math.round((rate - zinsen) * 100.0) / 100.0;;
             restschuld = Math.round((tilgungsDAO.findById(tilgungDO.getId()).get().getRestschuld() + til) * 100.0) / 100.0;
             date = nextMonth(tilgungDO);
-
         }
+
+        TableGeneration test = new TableGeneration(tilgungsDAO);
+        test.createTable();
     }
 
     public double getDarlehen () {
         Scanner in = new Scanner(System.in);
-       // System.out.println("");
         System.out.print("\n\nDer Darlehensbetrag: ");
         double d = in.nextDouble();
+        String s = String.valueOf((int)d);
+        while (!s.matches("\\d*")){
+            System.out.print("\n\nDer Darlehensbetrag: ");
+            d = in.nextDouble();
+            s = String.valueOf((int)d);
+        }
+
         return d;
     }
 

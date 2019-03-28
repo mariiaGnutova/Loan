@@ -1,67 +1,46 @@
 package com.tilgungsplan.demo.output;
 
-import java.sql.*;
+import com.tilgungsplan.demo.dataAccessObject.TilgungsDAO;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class TableGeneration extends SumColum{
-    private Statement statement;
-    public void createTable() throws ClassNotFoundException, SQLException {
-        Class.forName("org.h2.Driver");
-        Connection con = DriverManager.getConnection("jdbc:h2:~/test",
-                "sa", "");
-        statement = con.createStatement();
-        double zinsemSum = sumElement("ZINSEN", statement);
-        double restschuldResult = sumElement("RESTSCHULD", statement);
-        double tilgungSum = sumElement("TILGUNG", statement);
-        double rateSum = sumElement("RATE", statement);
-        System.out.printf("\n%s %27s %11s %30s %7s %n", "Date", "Restschuld", "Zinsen", "Tilgung(+)/Auszahlung(-)", "Rate");
-        for (int i = 1; i < 4; i++){
-            System.out.printf("\n%7s %20s %13s %20s %17s %n", executeDate(i),
-                    executeStatment("RESTSCHULD", i), executeStatment("ZINSEN", i),
-                    executeStatment("TILGUNG", i), executeStatment("RATE", i));
-        }
-        System.out.printf("\n%30s", "...");
+public class TableGeneration{
 
-        for (int y = lastID()-1; y < lastID() + 1; y++){
-            System.out.printf("\n%7s %20s %13s %20s %17s %n", executeDate(y),
-                    executeStatment("RESTSCHULD", y), executeStatment("ZINSEN", y),
-                    executeStatment("TILGUNG", y), executeStatment("RATE", y));
-        }
+    private TilgungsDAO tilgungsDAO;
 
-        System.out.printf("\n%7s %14s %14s %20s %17s %n", "Zinsbindungsende", restschuldResult, zinsemSum, tilgungSum, rateSum);
+    public TableGeneration(TilgungsDAO tilgungsDAO) {
+        this.tilgungsDAO = tilgungsDAO;
 
     }
 
-    private double executeStatment (String column, int id) throws SQLException {
-        double sum = 0.0;
-        ResultSet res = statement.executeQuery("SELECT " + column + " FROM TILGUNGSPLAN WHERE ID=" + id);
-        while (res.next()) {
-            double c = res.getDouble(1);
-            sum = sum + c;
-        }
-        return sum;
-    }
-    private String executeDate (int id) throws SQLException {
-        double sum = 0.0;
-        String date = new String();
-        ResultSet res = statement.executeQuery("SELECT DATUM FROM TILGUNGSPLAN WHERE ID=" + id);
+    public void createTable() {
         DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-        while (res.next()) {
-            Date c = res.getDate(1);
+        Date c;
+        String date = new String();
+        System.out.printf("\n%s %27s %11s %30s %7s %n", "Date", "Restschuld", "Zinsen", "Tilgung(+)/Auszahlung(-)",
+                "Rate");
+        for (long i = 1; i < 4; i++) {
+
+            c = this.tilgungsDAO.findById(i).get().getDatum();
             date = dateFormat.format(c);
-
+            System.out.printf("\n%7s %20s %13s %20s %17s %n", date,
+                    this.tilgungsDAO.findById(i).get().getRestschuld(), this.tilgungsDAO.findById(i).get().getZinsen(),
+                    this.tilgungsDAO.findById(i).get().getTilgung(), this.tilgungsDAO.findById(i).get().getRate());
         }
-        return date;
-    }
+        System.out.printf("%40s %140s", "...", "");
 
-    private int lastID () throws SQLException {
-        ResultSet res = statement.executeQuery("SELECT MAX(id) FROM TILGUNGSPLAN");
-        int id = 0;
-        while (res.next()) {
-            id = res.getInt(1);
+        for (long y = tilgungsDAO.count() - 1; y < tilgungsDAO.count() + 1; y++) {
+            c = this.tilgungsDAO.findById(y).get().getDatum();
+            date = dateFormat.format(c);
+            System.out.printf("\n%7s %20s %13s %20s %17s %n", date,
+                    this.tilgungsDAO.findById(y).get().getRestschuld(), this.tilgungsDAO.findById(y).get().getZinsen(),
+                    this.tilgungsDAO.findById(y).get().getTilgung(), this.tilgungsDAO.findById(y).get().getRate());
         }
-        return id;
+        System.out.printf("\n%7s %14s %14s %20s %17s %n", "Zinsbindungsende", this.tilgungsDAO.findById(
+                tilgungsDAO.count()).get().getRestschuld(), this.tilgungsDAO.sumZinsen(), this.tilgungsDAO.sumTilgung(),
+                this.tilgungsDAO.sumRate());
     }
 
 }
