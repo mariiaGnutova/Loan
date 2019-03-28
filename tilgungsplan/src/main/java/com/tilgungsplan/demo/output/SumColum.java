@@ -4,17 +4,24 @@ import java.sql.*;
 
 public class SumColum {
 
-    public void  sumElement() throws ClassNotFoundException, SQLException {
+    public double sumElement(String column, Statement statement) throws  SQLException {
     double sum = 0;
-    Class.forName("org.h2.Driver");
-    Connection con = DriverManager.getConnection("jdbc:h2:~/test",
-            "sa", "");
-    Statement st = con.createStatement();
-    ResultSet res = st.executeQuery("SELECT SUM(Zinsen) FROM TILGUNGSPLAN");
+    String sql = "SELECT round(SUM(" + column + "),2) FROM TILGUNGSPLAN";
+    if (column == "RESTSCHULD"){
+        sql = "SELECT TOP 1 RESTSCHULD FROM TILGUNGSPLAN ORDER BY id DESC";
+    }
+    ResultSet res = statement.executeQuery(sql);
 		while (res.next()) {
-        double c = res.getInt(1);
+        double c = res.getDouble(1);
         sum = sum + c;
     }
-		System.out.println("Sum of column = " + sum);
+    if (column == "RATE" || column == "TILGUNG"){
+        res = statement.executeQuery("SELECT " + column +" FROM TILGUNGSPLAN WHERE ID=1");
+        while (res.next()) {
+            double c = res.getDouble(1);
+            sum = sum - c;
+        }
+    }
+    return sum;
     }
 }
