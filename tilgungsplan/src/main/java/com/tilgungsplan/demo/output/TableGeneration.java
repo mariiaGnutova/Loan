@@ -1,6 +1,6 @@
 package com.tilgungsplan.demo.output;
 
-import com.tilgungsplan.demo.dataAccessObject.TilgungsDAO;
+import com.tilgungsplan.demo.dataAccessObject.RepaymentDAO;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -8,10 +8,10 @@ import java.util.Date;
 
 public class TableGeneration{
 
-    private TilgungsDAO tilgungsDAO;
+    private RepaymentDAO repaymentDAO;
 
-    public TableGeneration(TilgungsDAO tilgungsDAO) {
-        this.tilgungsDAO = tilgungsDAO;
+    public TableGeneration(RepaymentDAO repaymentDAO) {
+        this.repaymentDAO = repaymentDAO;
 
     }
 
@@ -23,24 +23,24 @@ public class TableGeneration{
                 "Rate");
         for (long i = 1; i < 4; i++) {
 
-            c = this.tilgungsDAO.findById(i).get().getDatum();
+            c = repaymentDAO.findById(i).get().getDate();
             date = dateFormat.format(c);
             System.out.printf("\n%7s %20s %13s %20s %17s %n", date,
-                    this.tilgungsDAO.findById(i).get().getRestschuld(), this.tilgungsDAO.findById(i).get().getZinsen(),
-                    this.tilgungsDAO.findById(i).get().getTilgung(), this.tilgungsDAO.findById(i).get().getRate());
+                    repaymentDAO.findById(i).get().getRemainingDebt(), repaymentDAO.findById(i).get().getInterest(),
+                    repaymentDAO.findById(i).get().getRepayment(), repaymentDAO.findById(i).get().getRate());
         }
-        System.out.printf("%40s %140s", "...", "");
+        System.out.printf("%40s %170s", "...", "");
 
-        for (long y = tilgungsDAO.count() - 1; y < tilgungsDAO.count() + 1; y++) {
-            c = this.tilgungsDAO.findById(y).get().getDatum();
+        for (long y = repaymentDAO.count() - 1; y < repaymentDAO.count() + 1; y++) {
+            c = repaymentDAO.findById(y).get().getDate();
             date = dateFormat.format(c);
             System.out.printf("\n%7s %20s %13s %20s %17s %n", date,
-                    this.tilgungsDAO.findById(y).get().getRestschuld(), this.tilgungsDAO.findById(y).get().getZinsen(),
-                    this.tilgungsDAO.findById(y).get().getTilgung(), this.tilgungsDAO.findById(y).get().getRate());
+                    repaymentDAO.findById(y).get().getRemainingDebt(), repaymentDAO.findById(y).get().getInterest(),
+                    repaymentDAO.findById(y).get().getRepayment(), repaymentDAO.findById(y).get().getRate());
         }
-        System.out.printf("\n%7s %14s %14s %20s %17s %n", "Zinsbindungsende", this.tilgungsDAO.findById(
-                tilgungsDAO.count()).get().getRestschuld(), this.tilgungsDAO.sumZinsen(), this.tilgungsDAO.sumTilgung(),
-                this.tilgungsDAO.sumRate());
+        System.out.printf("\n%7s %14s %14s %20s %17s %n", "Zinsbindungsende", repaymentDAO.findById(
+                repaymentDAO.count()).get().getRemainingDebt(), repaymentDAO.sumInterest(), repaymentDAO.sumRepayment(),
+                repaymentDAO.sumRate());
     }
 
 }
